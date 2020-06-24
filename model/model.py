@@ -2,23 +2,8 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 
-bike_data = pd.read_csv("../data/train.csv")
-
-def data_analysis(df):
-    '''
-    Takes in a dataframe as input and prints out the Shape, Column Names, Data Types,
-    and Null Values
-    '''
-    print("Data Shape:")
-    print(df.shape, end = "\n\n")
-    print("Column Names:")
-    print(df.columns, end = "\n\n")
-    print("Data Types:")
-    print(df.dtypes, end = "\n\n")
-    print("Null Values:")
-    print(df.isnull().sum())
-
-data_analysis(bike_data)
+train = pd.read_csv("../data/train.csv")
+test = pd.read_csv("../data/test.csv")
 
 def remove_count_outlier(df):
     """Function to remove outliers that are beyond 3 standard deviation for counts
@@ -33,7 +18,7 @@ def remove_count_outlier(df):
                           df['count'].mean()) <= 3 * df['count'].std()]
     return new_df
 
-bike_data = remove_count_outlier(bike_data)
+train = remove_count_outlier(train)
 
 def add_time_date(df):
     """Function to add new columns using the datetime column
@@ -57,8 +42,9 @@ def add_time_date(df):
 
 def preprocess_data(df):
     """Function to pre-process the bike share data.
-    Adds datetime data
-    
+    Adds datetime columns
+    Normalize Data
+
 
     Args:
         df ([pd dataframe]): Raw data of bike data
@@ -66,6 +52,8 @@ def preprocess_data(df):
     Returns:
         [pd dataframe]: Dataframe after performing preprocessing
     """
-    new_df = add_time_data(bike_data)
+    new_df = add_time_date(df)
 
-    return data
+    return new_df
+
+train = preprocess_data(train)
