@@ -68,13 +68,16 @@ def preprocess_data(df):
     categ_variables = ['weather', 'season', 'workingday', 'hour', 'month', 'year']
     drop_variables = ['datetime', 'registered', 'casual', 'windspeed', 'temp']
 
+    # Add datetime split columns
     new_df = add_time_date(df)
+
+    # OH Encode Categ Variables
     new_df = get_categ_dummies(new_df, categ_variables)
 
+    # Drop unnecessary Columns
     new_df = new_df.drop(drop_variables, axis=1)
 
-    return new_df
+    return new_df.drop('count', axis = 1), new_df['count']
 
-train = preprocess_data(train)
 
-print(train.columns)
+X_train, y_train = preprocess_data(train)
