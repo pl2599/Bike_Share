@@ -47,10 +47,7 @@ def get_categ_dummies(df, categ_variables):
         categ_variables ([type]): list of category variables
     """
 
-    dummy_df = pd.get_dummies(df, prefix=[var[0] for var in categ_variables], drop_first=True, columns=categ_variables)
-    print(dummy_df.columns)
-    # dummy_df = dummy_df.drop(categ_variables, axis=1)
-    return pd.concat([df, dummy_df], axis=1)
+    return pd.get_dummies(df, prefix=[var[0] for var in categ_variables], drop_first=True, columns=categ_variables)
 
 
 
