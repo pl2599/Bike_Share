@@ -1,11 +1,15 @@
 import pandas as pd
 import numpy as np
 from datetime import datetime
-from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.base import BaseEstimator, TransformerMixin
-from skklearn.compose import TransformedTargetRegressor
+from sklearn.impute import SimpleImputer
+from sklearn.compose import TransformedTargetRegressor
+from sklearn.linear_model import LinearRegression, Ridge, Lasso
+from sklearn.model_selection import cross_val_score
+from sklearn.metrics import mean_squared_log_error, make_scorer
 
 train = pd.read_csv("../data/train.csv")
 test = pd.read_csv("../data/test.csv")
@@ -25,6 +29,15 @@ def remove_count_outlier(df):
 
 # Remove outliers for train data
 train = remove_count_outlier(train)
+X, y = train.drop(['count'], axis=1), train['count']
+
+# Define rmlse scorer
+def rmlse(y, pred):
+    return np.sqrt(mean_squared_log_error(y, pred))
+
+# Create scorer to be fed into cv
+rmlse_scorer = make_scorer(rmlse, greater_is_better=False)
+
 
 # Create a transformer class to create columns using datetime
 class DateTransformer(BaseEstimator, TransformerMixin):
@@ -48,22 +61,6 @@ class DateTransformer(BaseEstimator, TransformerMixin):
             'year': x_datetime.apply(lambda x: x.year),
         })
 
-
-class CustomTargetTransformer(BaseEstimator, TransformerMixin):
-    def fit(self, y):
-        return self
-
-    def transform(self, y):
-        y_ = y.copy()
-        y_ = np.log(y_)
-        return y
-
-    def inverse_transform(self, y):
-        y_ = y.copy()
-        y_ = np.exp(y_)
-        return y_
-
-
 # Transformer for datetime
 date_transformer = Pipeline(
     steps = [
@@ -73,12 +70,12 @@ date_transformer = Pipeline(
 )
 
 # Transformer for numerical columns
-num_cols = []
-num_transformer = 
+num_cols = ['atemp', 'humidity']
+num_transformer = StandardScaler()
 
 # Transformer for categoriacl columns
 categ_cols = ['weather', 'season', 'workingday']
-categ_transformer = OneHotEncoder()
+categ_transformer = OneHotEncoder(handle_unknown='ignore')
 
 # Create a preprocessor transformer for columns
 preprocessor = ColumnTransformer(
@@ -89,22 +86,34 @@ preprocessor = ColumnTransformer(
     ]
 )
 
+# Linear Regression
+lm = LinearRegression()
 
 # Create a pipeline to combine the model and preprocessor transformer
-
-pipeline = Pipeline(
+lm_pipeline = Pipeline(
     steps = [
         ('preprocessor', preprocessor),
-        ('model', model)
+        ('model', lm)
     ]
 )
 
-
-model = TransformedTargetRegressor(
-    regressor=pipeline,
+# Transform the y column
+lm_transformed = TransformedTargetRegressor(
+    regressor=lm_pipeline,
     func=np.log1p, 
     inverse_func=np.expm1
 )
 
+# Train the model
+lm_transformed.fit(X, y)
 
+# Predict
+lm_scores = cross_val_score(
+    lm_transformed, X, y,
+    cv = 5,
+    scoring=rmlse_scorer
+)
+
+lm_rmlse = -1 * lm_scores.mean()
+print(f"The average rmlse after cross validation is: {lm_rmlse}")
 
