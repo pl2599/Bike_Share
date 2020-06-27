@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from datetime import datetime
+from sklearn.base import BaseEstimator, TransformerMixMin
 
 train = pd.read_csv("../data/train.csv")
 test = pd.read_csv("../data/test.csv")
@@ -50,6 +51,29 @@ def get_categ_dummies(df, categ_variables):
     return pd.get_dummies(df, prefix=[var[0] for var in categ_variables], drop_first=True, columns=categ_variables)
 
 
+# Create a transformer class to create columns using datetime
+class DateTransformer(BaseEstimator, TransformerMixMin):
+    def fit(self, X, y=None):
+        return self
+    
+    def transform(self, x, y=None):
+        """Creates columns based on datetime column
+
+        Args:
+            x ([pd series]): dataframe of x values
+            y ([pd series], optional): outputs. Defaults to None.
+
+        Returns:
+            [pd dataframe]: Transformed dataframe with additional columns
+        """
+        x_datetime = x.apply(lambda x: datetime.strptime(x, '%Y-%m-%d %H:%M:%S'))
+        return pd.dataframe({
+            'hour': x_datetime.apply(lambda x: x.hour),
+            'month': x_datetime.apply(lambda x: x.month),
+            'year': x_datetime.apply(lambda x: x.year),
+        })
+
+
 
 def preprocess_data(df):
     """Function to pre-process the bike share data.
@@ -81,3 +105,7 @@ def preprocess_data(df):
 
 
 X_train, y_train = preprocess_data(train)
+
+
+
+
