@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from datetime import datetime
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.preprocessing import OneHotEncoder, StandardScaler, FunctionTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -11,9 +11,15 @@ from sklearn.linear_model import LinearRegression, Ridge, Lasso
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import mean_squared_log_error, make_scorer
 
+# Read Data
 train = pd.read_csv("../data/train.csv")
 test = pd.read_csv("../data/test.csv")
 
+# Define rmlse scorer
+def rmlse(y, pred):
+    return np.sqrt(mean_squared_log_error(y, pred))
+
+# Remove outliers for train data
 def remove_count_outlier(df):
     """Function to remove outliers that are beyond 3 standard deviation for counts
 
@@ -27,17 +33,13 @@ def remove_count_outlier(df):
                           df['count'].mean()) <= 3 * df['count'].std()]
     return new_df
 
-# Remove outliers for train data
 train = remove_count_outlier(train)
-X, y = train.drop(['count'], axis=1), train['count']
 
-# Define rmlse scorer
-def rmlse(y, pred):
-    return np.sqrt(mean_squared_log_error(y, pred))
+# Split to X_train and y_train
+X_train, y_train = train.drop(['count'], axis=1), train['count']
 
 # Create scorer to be fed into cv
 rmlse_scorer = make_scorer(rmlse, greater_is_better=False)
-
 
 # Create a transformer class to create columns using datetime
 class DateTransformer(BaseEstimator, TransformerMixin):
@@ -61,7 +63,7 @@ class DateTransformer(BaseEstimator, TransformerMixin):
             'year': x_datetime.apply(lambda x: x.year),
         })
 
-# Transformer for datetime
+# Transformer for datetime - Splitting and OH Encoding
 date_transformer = Pipeline(
     steps = [
         ('datetime', DateTransformer()),
@@ -69,16 +71,16 @@ date_transformer = Pipeline(
     ]
 )
 
-# Transformer for numerical columns
+# Transformer for numerical columns - Scaling
 num_cols = ['atemp', 'humidity']
 num_transformer = StandardScaler()
 
-# Transformer for categoriacl columns
+# Transformer for categorial columns - OneHot Encoding
 categ_cols = ['weather', 'season', 'workingday']
 categ_transformer = OneHotEncoder(handle_unknown='ignore')
 
-# Create a preprocessor transformer for columns
-preprocessor = ColumnTransformer(
+# Create a preprocessor transformer for columns, where numerical columns are scaled
+preprocessor_scaled = ColumnTransformer(
     transformers = [
         ('datetime', date_transformer, 'datetime'),
         ('num', num_transformer, num_cols),
@@ -89,15 +91,15 @@ preprocessor = ColumnTransformer(
 # Linear Regression
 lm = LinearRegression()
 
-# Create a pipeline to combine the model and preprocessor transformer
+# Create a pipeline to combine the model and preprocessor scaled transformer
 lm_pipeline = Pipeline(
     steps = [
-        ('preprocessor', preprocessor),
+        ('preprocessor', preprocessor_scaled),
         ('model', lm)
     ]
 )
 
-# Transform the y column
+# Transform the y column using TransformedTargetRegressor
 lm_transformed = TransformedTargetRegressor(
     regressor=lm_pipeline,
     func=np.log1p, 
@@ -105,11 +107,11 @@ lm_transformed = TransformedTargetRegressor(
 )
 
 # Train the model
-lm_transformed.fit(X, y)
+lm_transformed.fit(X_train, y_train)
 
 # Predict
 lm_scores = cross_val_score(
-    lm_transformed, X, y,
+    lm_transformed, X_train, y_train,
     cv = 5,
     scoring=rmlse_scorer
 )
@@ -117,3 +119,26 @@ lm_scores = cross_val_score(
 lm_rmlse = -1 * lm_scores.mean()
 print(f"The average rmlse after cross validation is: {lm_rmlse}")
 
+
+# Random Forest
+
+# Transformer to select columns
+all_cols = num_cols + categ_cols + ['datetime']
+select_transformer = FunctionTransformer(lambda x: x[all_cols])
+
+# Create a preprocessor transformer for columns, where numerical columns are not scaled
+preprocessor_not_scaled = ColumnTransformer(
+    transformers = [
+        ('datetime', date_transformer, 'datetime'),
+        ('cat', categ_transformer, categ_cols)
+    ],
+    remainder='passthrough'
+)
+
+# Create a pipeline to combine the model and preprocessor scaled transformer
+custom_pipeline = Pipeline(
+    steps = [
+        ('select', select_transformer),
+        ('preprocessor', preprocessor_not_scaled),
+    ]
+)
