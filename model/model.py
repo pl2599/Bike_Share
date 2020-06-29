@@ -20,16 +20,13 @@ train_rf = False
 train_xgb = False
 model_compare_results = False
 hyper_tune = False
-train_champion = True
+train_champion = False
 predict_test = False
 
 
 # Read Data
 train = pd.read_csv("../data/train.csv")
 test = pd.read_csv("../data/test.csv")
-
-print(train.columns)
-print(test.columns)
 
 # Define rmsle function
 def rmsle(y, pred):
@@ -274,7 +271,7 @@ if model_compare_results:
 if hyper_tune:
 
     # Initialize model
-    xgb_2 = XGBRegressor()
+    xgb_2 = XGBRegressor(n_jobs=-1)
 
     # Create a pipeline to combine the model and preprocessor scaled transformer
     xgb_pipeline_2 = Pipeline(
@@ -333,8 +330,12 @@ else:
 
 # Train Champion
 if train_champion:
+
+    # Remove the leading characters from the parameter dictionary
+    best_params = {key[18:]: value for (key, value) in xgb_grid.best_params_.items()}
+
     # Initialize model
-    champion = XGBRegressor(n_jobs=-1, **xgb_grid.best_params_)
+    champion = XGBRegressor(n_jobs=-1, **best_params)
 
     # Create a pipeline to combine the model and preprocessor scaled transformer
     champion_pipeline = Pipeline(
