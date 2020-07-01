@@ -2,6 +2,7 @@
 Project to forecast Bike Share Demand
  
 
+
 ## Description
 Bike sharing systems are a means of renting bicycles where the process of obtaining membership, rental, and bike return is automated via a network of kiosk locations throughout a city. Using these systems, people are able rent a bike from a one location and return it to a different place on an as-needed basis. Currently, there are over 500 bike-sharing programs around the world.
 
@@ -11,4 +12,4 @@ The training set is comprised of the first 19 days of each month, while the test
 
 
 ## Objective
-In this project, I will perform EDA on the data bike sharing training data and inform the feature selection / engineering to be fed into the models. Afterwards, I will create pipelines to preprocess the data and train several models before selecting a champion model. 
+In this project, I performed EDA on the bike sharing training data and inform the feature selection / engineering to be fed into the models. Afterwards, I will create pipelines to preprocess the data and train several models before selecting a champion model. 
