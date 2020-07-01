@@ -1,7 +1,7 @@
-# Bike_Share
-Project to forecast Bike Share Demand
- 
-
+# Bike Share Demand Forecast
+<p align="center">
+    <img src = "./images/bike.jpg" width=500>
+</p>
 
 ## Description
 Bike sharing systems are a means of renting bicycles where the process of obtaining membership, rental, and bike return is automated via a network of kiosk locations throughout a city. Using these systems, people are able rent a bike from a one location and return it to a different place on an as-needed basis. Currently, there are over 500 bike-sharing programs around the world.
@@ -12,4 +12,38 @@ The training set is comprised of the first 19 days of each month, while the test
 
 
 ## Objective
-In this project, I performed EDA on the bike sharing training data and inform the feature selection / engineering to be fed into the models. Afterwards, I will create pipelines to preprocess the data and train several models before selecting a champion model. 
+In this project, I will:
+* Perform EDA on the bike sharing training data and inform the feature selection / engineering to be fed into the models. 
+* Create pipelines to preprocess the data and train several models before selecting a champion model. 
+* Predict the bike share demand of the test data.
+
+
+## Exploratory Analysis
+
+### Count
+
+### Correlation Matrix
+
+### Outlier
+
+
+## Data Preprocessing
+
+## Models
+
+RMSLE - Scoring
+
+Cross validation with 5 folds is used to determine the RMLSE. 
+
+
+I utilized 3 models during my model selection process. Linear Regerssion was used as the baseline model. The challenger models are Random Forest and XGBoost. Using cross validation, I determined the RMLSE for these 3 models. 
+
+![rmsle_image]
+
+XGBoost had the lowest RMSLE, so it was chosen as the model. In order to further improve its performance, I performed hyperparameter tuning to calibrate the hyperparameters. In the end, the model with the most optimal hyperparameters had an RMSLE of _____
+
+## Champion Model Testing Results
+
+The champion model had an RMLSE of ____ on the testing data.
+
+
