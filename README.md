@@ -42,7 +42,7 @@ From the correlation matrix above, there are a couple important inferences made:
 
 Lastly, I performed bivariate analyses, looking at the categorical variables and their interaction with the dependent variable.
 
-![categ_vars](.figs/categ_vars.png)
+![categ_vars](./figs/categ_vars.png)
 
 From the figures above, we noticed that:
 * Spring has a relatively lower number of _count_, and a smaller interquartile range. Seems there is just less demand in Spring
