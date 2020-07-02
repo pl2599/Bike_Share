@@ -1,4 +1,4 @@
-# Bike Share Demand Forecast
+# Bike Share Demand Forecast - Kaggle Competition
 <p align="center">
     <img src = "./images/bike.jpg" width=500>
 </p>
@@ -31,19 +31,18 @@ In this project, I will:
 
 ## Models
 
-RMSLE - Scoring
+In order to evaluate our models, we utilized root mean squared log error (RMSLE). The equation of RMSLE is as follows:
 
-Cross validation with 5 folds is used to determine the RMLSE. 
+![equation](https://latex.codecogs.com/png.latex?%5Csqrt%7B%5Cfrac1n%5Csum_%7Bi%3D1%7D%5E%7Bn%7D%7B%28%5Clog%28p_%7Bi%7D&plus;1%29%7D%20-%20%5Clog%28a_i%20&plus;%201%29%29%5E%7B2%7D%7D%5C%5C%5C%5C%5Ctext%7Bwhere%3A%7D%5C%5Cp_i%20%3D%20%5Ctext%7Bprediction%20of%20the%20ith%20observation%7D%5C%5Ca_i%20%3D%20%5Ctext%7Bactual%20of%20the%20ith%20observation%7D%5C%5Cn%20%3D%20%5Ctext%7Bsample%20size%7D)
 
+I utilized 3 models during my model selection process. Linear Regerssion was used as the baseline model. The challenger models are Random Forest and XGBoost. Using cross validation with 5 folds, I determined the RMSLE for these 3 models. 
 
-I utilized 3 models during my model selection process. Linear Regerssion was used as the baseline model. The challenger models are Random Forest and XGBoost. Using cross validation, I determined the RMLSE for these 3 models. 
+![model results](./figs/model_results.png)
 
-![rmsle_image]
+XGBoost had the lowest RMSLE, so it was chosen as the model. In order to further improve its performance, I performed hyperparameter tuning to calibrate the hyperparameters. In the end, the model with the most optimal hyperparameters had the following RMSLE.
 
-XGBoost had the lowest RMSLE, so it was chosen as the model. In order to further improve its performance, I performed hyperparameter tuning to calibrate the hyperparameters. In the end, the model with the most optimal hyperparameters had an RMSLE of _____
+![champion results](./figs/champion_results.png)
 
 ## Champion Model Testing Results
 
-The champion model had an RMLSE of ____ on the testing data.
-
-
+The champion model had an RMLSE of 0.41527 on the testing data when submitted to Kaggle.

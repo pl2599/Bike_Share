@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 import dill
 from datetime import datetime
 from sklearn.preprocessing import OneHotEncoder, StandardScaler, FunctionTransformer
@@ -21,6 +22,7 @@ train_xgb = False
 model_compare_results = False
 hyper_tune = False
 train_champion = False
+champion_results = True
 predict_test = False
 
 
@@ -40,6 +42,36 @@ def rmsle(y, pred):
         float: rmsle score
     """
     return np.sqrt(mean_squared_log_error(y, pred))
+
+# Define function to save tables
+def save_table(df, fig_name):
+    """Function to save a table in the figs folder
+
+    Args:
+        df (pd DataFrame): DataFrame to be saved as table
+        fig_name (String): figure name
+    """
+    # Plot Table
+    fig, ax = plt.subplots()
+
+    # Hide Axes
+    fig.patch.set_visible(False)
+    ax.axis('off')
+    ax.axis('tight')
+    
+    # Create Table
+    ax.table(
+        cellText=df.values,
+        colLabels=df.columns,
+        loc='center',
+        cellLoc='center',
+        colColours=['lightblue'] * len(df.columns)
+    )
+
+    fig.tight_layout()
+
+    # Save Fig
+    plt.savefig('../figs/' + fig_name + '.png', bbox_inches='tight', pad_inches=0)
 
 # Create scorer to be fed into cv
 rmsle_scorer = make_scorer(rmsle, greater_is_better=False)
@@ -261,10 +293,14 @@ if model_compare_results:
     # Model Comparison results
     model_results = pd.DataFrame({
         'Models': ['Linear', 'Random_Forest', 'XGBoost'],
-        'RMLSE': [lm_rmsle, rf_rmsle, xgb_rmsle]
+        'RMSLE': [lm_rmsle, rf_rmsle, xgb_rmsle]
     })
 
     print(model_results)
+
+    # Save Table
+    save_table(model_results, 'model_results')
+    
 
 
 # Hyperparameter Tuning for XGBoost
@@ -367,6 +403,22 @@ else:
             champion_transformed = dill.load(file)
     except IOError:
         pass
+
+# Champion Results
+if champion_results:
+    # Get RMSLE
+    champion_rmsle = rmsle_cv_mean(champion_transformed)
+
+    # Create Dataframe
+    champion_results = pd.DataFrame({
+        'Model': ["XGBoost Hyperparameter Tuned"],
+        'RMSLE': [champion_rmsle]
+    })
+
+    print(champion_results)
+
+    # Save Table
+    save_table(champion_results, 'champion_results')
 
 # Make predictions on test data
 if predict_test:
