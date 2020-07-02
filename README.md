@@ -20,18 +20,58 @@ In this project, I will:
 
 ## Exploratory Analysis
 
-### Count
+### Dependent Variable Univeraiate Analysis
+
+I first performed  univariate analyses for all variables. In particular, the dependent variable _count_ has an interesting distribution.
+
+![count_distribution](./figs/count_dist.png)
+
+The figure on the left is the distribution before a transformation is applied to the _count_ variable. It is clear that the distribution is skewed to the right. One of the Ordinary Least Squares assumption (required for linear regression) is to have the error term be normally distributed. After applying a log transformation, the distribution looks closer to a bell curve. This transformation is applied for Linear Regression and XGBoost.
 
 ### Correlation Matrix
 
-### Outlier
+I also looked at the correlation matrix for all the numerical variables.
 
+![correlation_matrix](./figs/corr_matrix.png)
+
+From the correlation matrix above, there are a couple important inferences made:
+* _windspeed_ is not really correlated with _count_ - we will exclude windspeed from the models
+* _temp_ and _atemp_ are highly correlated - we will only include _atemp_ in the models
+
+### Categorical Variables 
+
+Lastly, I performed bivariate analyses, looking at the categorical variables and their interaction with the dependent variable.
+
+![categ_vars](.figs/categ_vars.png)
+
+From the figures above, we noticed that:
+* Spring has a relatively lower number of _count_, and a smaller interquartile range. Seems there is just less demand in Spring
+* Clear skies, as expected, have the most bike demand
+* There is more demand of bike share around 7am and 5pm. Hour will be an important dependent variable
 
 ## Data Preprocessing
 
+### Feature Selection
+
+I abstained from using functions such as _SelectKBest_. Instead, I heavily relied on my EDA to determine what variables to use in my mdoels.
+* Numerical Variables used: ['atemp', 'humidity']
+* Categorical Variables used: ['weather', 'season', 'workingday']
+
+### Feature Engineering 
+
+Feature Engineering was performed to extract the year, month, and day from the _datetime_ variable. 
+
+### Pipelines
+
+A pipeline was used for all data preprocessing and transformation steps. 
+* Numerical variables were scaled when training the linear regression model. 
+* Categorical variables were One Hot Encoded. 
+* Feature engineered variables from the _datetime_ column were also One Hot Encoded
+
+
 ## Models
 
-In order to evaluate our models, we utilized root mean squared log error (RMSLE). The equation of RMSLE is as follows:
+In order to evaluate our models, we utilized root mean squared logarithmic error (RMSLE). The equation of RMSLE is as follows:
 
 ![equation](https://latex.codecogs.com/png.latex?%5Csqrt%7B%5Cfrac1n%5Csum_%7Bi%3D1%7D%5E%7Bn%7D%7B%28%5Clog%28p_%7Bi%7D&plus;1%29%7D%20-%20%5Clog%28a_i%20&plus;%201%29%29%5E%7B2%7D%7D%5C%5C%5C%5C%5Ctext%7Bwhere%3A%7D%5C%5Cp_i%20%3D%20%5Ctext%7Bprediction%20of%20the%20ith%20observation%7D%5C%5Ca_i%20%3D%20%5Ctext%7Bactual%20of%20the%20ith%20observation%7D%5C%5Cn%20%3D%20%5Ctext%7Bsample%20size%7D)
 
@@ -39,7 +79,7 @@ I utilized 3 models during my model selection process. Linear Regerssion was use
 
 ![model results](./figs/model_results.png)
 
-XGBoost had the lowest RMSLE, so it was chosen as the model. In order to further improve its performance, I performed hyperparameter tuning to calibrate the hyperparameters. In the end, the model with the most optimal hyperparameters had the following RMSLE.
+XGBoost had the lowest RMSLE, so it was chosen as the champion model. In order to further improve its performance, I performed hyperparameter tuning to calibrate the hyperparameters. In the end, the model with the most optimal hyperparameters had the following RMSLE.
 
 ![champion results](./figs/champion_results.png)
 
